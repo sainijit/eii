@@ -23,7 +23,8 @@ metadata:
   namespace: {{ $global.Values.namespace }}
 spec:
   ports:
-  - port: {{ $publish_port }}
+  - nodePort: 32380
+    port: {{ $publish_port }}
     name: tcp
   selector:
     app: video{{ $instance }}
