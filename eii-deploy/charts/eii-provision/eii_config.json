@@ -1,0 +1,215 @@
+{
+    "/ConfigMgrAgent/config": {
+        "logging": {
+            "PY_LOG_LEVEL": "ERROR"
+        }
+    },
+    "/EtcdUI/config": {
+        "cert_type": [
+            "pem"
+        ],
+        "logging": {
+            "C_LOG_LEVEL": "INFO",
+            "PY_LOG_LEVEL": "INFO"
+        }
+    },
+    "/EtcdUI/interfaces": {},
+    "/MultiModalVisualization/config": {
+        "cert_type": [
+            "pem",
+            "zmq"
+        ],
+        "dev_port": 5004,
+        "influxdb": {
+            "dbname": "datain"
+        },
+        "logging": {
+            "C_LOG_LEVEL": "INFO",
+            "PY_LOG_LEVEL": "INFO"
+        },
+        "port": 5003
+    },
+    "/MultiModalVisualization/interfaces": {
+        "Subscribers": [
+            {
+                "EndPoint": "ia_video_analytics:65013",
+                "Name": "default",
+                "PublisherAppName": "VideoAnalytics",
+                "Topics": [
+                    "camera1_stream_results"
+                ],
+                "Type": "zmq_tcp"
+            }
+        ]
+    },
+    "/MultiModalVisualizationStreaming/config": {
+        "cert_type": [
+            "pem",
+            "zmq"
+        ],
+        "dev_port": 5004,
+        "draw_results": "true",
+        "influxdb": {
+            "dbname": "datain"
+        },
+        "labels": {
+            "camera1_stream_results": {
+                "0": "MISSING",
+                "1": "SHORT"
+            },
+            "gva_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+            },
+            "native_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+            },
+            "py_safety_gear_stream_results": {
+                "1": "safety_helmet",
+                "2": "safety_jacket",
+                "3": "Safe",
+                "4": "Violation"
+            }
+        },
+        "logging": {
+            "C_LOG_LEVEL": "INFO",
+            "PY_LOG_LEVEL": "INFO"
+        },
+        "port": 5003
+    },
+    "/MultiModalVisualizationStreaming/interfaces": {
+        "Subscribers": [
+            {
+                "EndPoint": "ia_video_analytics:65013",
+                "Name": "default",
+                "PublisherAppName": "VideoAnalytics",
+                "Topics": [
+                    "camera1_stream_results"
+                ],
+                "Type": "zmq_tcp"
+            }
+        ]
+    },
+    "/VideoAnalytics/config": {
+        "cert_type": [
+            "zmq"
+        ],
+        "encoding": {
+            "level": 95,
+            "type": "jpeg"
+        },
+        "logging": {
+            "C_LOG_LEVEL": "INFO",
+            "PY_LOG_LEVEL": "INFO"
+        },
+        "max_workers": 4,
+        "queue_size": 10,
+        "udfs": [
+            {
+                "device": "CPU",
+                "model_bin": "common/video/udfs/python/pcb/ref/model_2.bin",
+                "model_xml": "common/video/udfs/python/pcb/ref/model_2.xml",
+                "name": "pcb.pcb_classifier",
+                "ref_config_roi": "common/video/udfs/python/pcb/ref/roi_2.json",
+                "ref_img": "common/video/udfs/python/pcb/ref/ref.png",
+                "type": "python"
+            }
+        ]
+    },
+    "/VideoAnalytics/interfaces": {
+        "Publishers": [
+            {
+                "AllowedClients": [
+                    "*"
+                ],
+                "EndPoint": "0.0.0.0:65013",
+                "Name": "default",
+                "Topics": [
+                    "camera1_stream_results"
+                ],
+                "Type": "zmq_tcp"
+            }
+        ],
+        "Subscribers": [
+            {
+                "EndPoint": "/EII/sockets",
+                "Name": "default",
+                "PublisherAppName": "VideoIngestion",
+                "Topics": [
+                    "camera1_stream"
+                ],
+                "Type": "zmq_ipc",
+                "zmq_recv_hwm": 50
+            }
+        ]
+    },
+    "/VideoIngestion/config": {
+        "cert_type": [
+            "zmq"
+        ],
+        "encoding": {
+            "level": 95,
+            "type": "jpeg"
+        },
+        "ingestor": {
+            "loop_video": true,
+            "pipeline": "./test_videos/pcb_d2000.avi",
+            "poll_interval": 0.2,
+            "queue_size": 10,
+            "type": "opencv"
+        },
+        "logging": {
+            "C_LOG_LEVEL": "INFO",
+            "PY_LOG_LEVEL": "INFO"
+        },
+        "max_workers": 4,
+        "sw_trigger": {
+            "init_state": "running"
+        },
+        "udfs": [
+            {
+                "n_left_px": 1000,
+                "n_right_px": 1000,
+                "n_total_px": 300000,
+                "name": "pcb.pcb_filter",
+                "scale_ratio": 4,
+                "training_mode": "false",
+                "type": "python"
+            }
+        ]
+    },
+    "/VideoIngestion/interfaces": {
+        "Publishers": [
+            {
+                "AllowedClients": [
+                    "VideoAnalytics",
+                    "Visualizer",
+                    "WebVisualizer",
+                    "TLSRemoteAgent",
+                    "RestDataExport"
+                ],
+                "EndPoint": "/EII/sockets",
+                "Name": "default",
+                "Topics": [
+                    "camera1_stream"
+                ],
+                "Type": "zmq_ipc"
+            }
+        ],
+        "Servers": [
+            {
+                "AllowedClients": [
+                    "*"
+                ],
+                "EndPoint": "0.0.0.0:64013",
+                "Name": "default",
+                "Type": "zmq_tcp"
+            }
+        ]
+    }
+}

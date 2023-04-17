@@ -1,0 +1,15 @@
+# Copyright Intel Corporation
+
+apiVersion: v1
+entries:
+  eii-deploy:
+  - apiVersion: v2
+    appVersion: v1.1.1
+    created: "2023-01-20T14:31:15,406280592+05:30"
+    description: Use video analytics solutions based on Inted Distribution of OpenVino toolkit models to support retail settings for pandemic scenarios, helping to reduce public health risks.
+    name: eii-deploy
+    type: application
+    urls:
+    - https://raw.githubusercontent.com/sindujaks/eii-helm-deploy/main/eii-deploy.tar.gz
+    version: "1.0.0"
+generated: "2023-01-20T16:26:14,802529643+05:30"

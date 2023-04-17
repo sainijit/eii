@@ -1,0 +1,17 @@
+# Copyright Intel Corporation
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ .Values.volumes.eii_socket.name }}
+  labels:
+    type: local
+spec:
+  storageClassName: {{ .Values.storageClassName }}
+  capacity:
+    storage: {{ .Values.volumes.eii_socket.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ .Values.volumes.eii_socket.hostpath }}

@@ -1,0 +1,73 @@
+# Copyright Intel Corporation
+
+namespace: default
+EII_VERSION: 4.0.0
+DOCKER_REGISTRY: ''
+DOCKER_USERNAME: ''
+DOCKER_PASSWORD: ''
+imagePullPolicy: IfNotPresent
+storageClassName: manual
+num_video_instances: 1
+env:
+  DEV_MODE: false
+  PROFILING_MODE: false
+  EII_INSTALL_PATH: /opt/intel/eii
+  EII_USER_NAME: eiiuser
+  EII_HOME_DIR: ''
+  EII_UID: '1999'
+  SOCKET_DIR: /EII/sockets
+  HOST_IP: ''
+  config_agent_service: EtcdUI,VideoIngestion,VideoAnalytics,MultiModalVisualizationStreaming,MultiModalVisualization
+  INFLUXDB_USERNAME: ''
+  INFLUXDB_PASSWORD: ''
+  MINIO_ACCESS_KEY: ''
+  MINIO_SECRET_KEY: ''
+  ETCDROOT_PASSWORD: ''
+  PIPELINE: ''
+  HTTP_METHOD_FETCH_METADATA: GET
+config:
+  etcd:
+    name: configmgragent
+    client_port: 8379
+    peer_port: 8380
+    ext:
+      client_port: 32379
+  etcd_ui:
+    name: etcd-ui
+    int_port: 7071
+    ext_port: 30010
+  video_ingestion:
+    name: videoingestion
+    publish_port: 65012
+    server_port: 64013
+    IPC: false
+    gige_camera: false
+    accelerator: ""
+  video_analytics:
+    name: videoanalytics
+    publish_port: 65013
+    IPC: false
+    accelerator: ""
+  multimodal_data_visualization_streaming:
+    name: multimodal-data-visualization-streaming
+    int:
+      https_port: "5003"
+      http_port: "5004"
+    ext:
+      https_port: "30008"
+      http_port: "30009"
+    IPC: false
+    gige_camera: false
+  multimodal_data_visualization:
+    name: multimodal-data-visualization
+    int:
+      port: "3000"
+    ext:
+      port: "30001"
+    IPC: false
+volumes:
+  eii_socket:
+    name: vol-eii-socket
+    size: 10Mi
+    location: "/EII/sockets"
+    hostpath: "/opt/intel/eii/sockets"

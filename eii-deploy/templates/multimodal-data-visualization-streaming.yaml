@@ -1,0 +1,173 @@
+# Copyright (c) 2022 Intel Corporation.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $.Values.config.multimodal_data_visualization_streaming.name }}
+  namespace: {{ $.Values.namespace }}
+spec:
+  type: NodePort
+  ports:
+  - name: https
+    port: {{ $.Values.config.multimodal_data_visualization_streaming.int.https_port }}
+    targetPort: {{ $.Values.config.multimodal_data_visualization_streaming.int.https_port }}
+    nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.https_port }}
+  - name: http
+    port: {{ $.Values.config.multimodal_data_visualization_streaming.int.http_port }}
+    targetPort: {{ $.Values.config.multimodal_data_visualization_streaming.int.http_port }}
+    nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.http_port }}
+  selector:
+          app: MultiModalVisualizationStreaming
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: MultiModalVisualizationStreaming
+  name: deployment-multimodal-data-visualization-streaming
+  namespace: {{ $.Values.namespace }}
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: MultiModalVisualizationStreaming
+  template:
+    metadata:
+      labels:
+        app: MultiModalVisualizationStreaming
+    spec:
+      securityContext:
+        runAsUser: {{ $.Values.env.EII_UID }}
+        runAsGroup: {{ $.Values.env.EII_UID }}
+        fsGroup: {{ $.Values.env.EII_UID }}
+      {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
+      containers:
+      - name: ia-multimodal-data-visualization-streaming
+        image: {{ $.Values.DOCKER_REGISTRY }}intel/multimodal-data-visualization-streaming:{{ $.Values.EII_VERSION }}
+        imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        volumeMounts:
+        - mountPath: /etc/nginx/sites-enabled
+          name: multimodal-data-visualization-streaming-tmpfs0
+        - mountPath: /usr/share/nginx
+          name: multimodal-data-visualization-streaming-tmpfs1
+        - mountPath: /var/log/nginx
+          name: multimodal-data-visualization-streaming-tmpfs2
+        - mountPath: /var/cache/nginx
+          name: multimodal-data-visualization-streaming-tmpfs3
+        - mountPath: /var/lib/nginx
+          name: multimodal-data-visualization-streaming-tmpfs4
+        - mountPath: /run
+          name: multimodal-data-visualization-streaming-tmpfs5
+        - mountPath: /tmp
+          name: multimodal-data-visualization-streaming-tmpfs6
+        {{- if eq $.Values.config.multimodal_data_visualization_streaming.IPC true}}
+        - name: {{ $.Values.volumes.eii_socket.name }}
+          mountPath: {{ $.Values.volumes.eii_socket.location }}
+        {{- end }}
+        {{ if eq $.Values.env.DEV_MODE false}}
+        - name: etcd-certs
+          mountPath: /run/secrets/etcd/
+        {{ end }}
+        env:
+        - name: AppName
+          value: 'MultiModalVisualizationStreaming'
+        - name: DEV_MODE
+          value: '{{ $.Values.env.DEV_MODE }}'
+        - name: ETCD_HOST
+          value: '{{ $.Values.config.etcd.name }}'
+        - name: ETCD_CLIENT_PORT
+          value: '{{ $.Values.config.etcd.client_port }}'
+        - name:  ETCD_PREFIX
+          value: ''
+        - name: HOST_IP
+          value: '{{ $.Values.env.HOST_IP }}'
+        - name: MODE
+          value: "EII"
+        - name: PROVISION_MODE
+          value: "k8s"
+        {{- $global := . -}}
+        {{- range $instance_idx := until (int .Values.num_video_instances) -}}
+        {{- $instance := "" }}
+        {{- $subscriber_port := "" }}
+        {{- if eq (int $global.Values.num_video_instances) 1 }}
+        {{- if ($global.Values.config.video_analytics) }}
+        {{- $subscriber_port = $global.Values.config.video_analytics.publish_port }}
+        {{- end }}
+        {{- if ($global.Values.config.edge_video_analytics_microservice) }}
+        {{- $subscriber_port = $global.Values.config.edge_video_analytics_microservice.publish_port }}
+        {{- end }}
+        {{- $instance = "" }}
+        {{- end }}
+        {{- if gt (int $global.Values.num_video_instances) 1 }}
+        {{- if ($global.Values.config.video_analytics) }}
+        {{- $subscriber_port = add $global.Values.config.video_analytics.publish_port $instance_idx }}
+        {{- end }}
+        {{- if ($global.Values.config.edge_video_analytics_microservice) }}
+        {{- $subscriber_port = add $global.Values.config.edge_video_analytics_microservice.publish_port $instance_idx }}
+        {{- end }}  
+        {{- $instance = add 1 $instance_idx }}
+        {{- end }}
+        {{- if eq $.Values.config.multimodal_data_visualization_streaming.IPC false}}
+        {{- if ($global.Values.config.video_analytics) }}
+        - name: SUBSCRIBER_default{{ $instance }}_ENDPOINT
+          value: "{{ $.Values.config.video_analytics.name }}{{ $instance }}:{{ $subscriber_port }}"
+        {{- end }}
+        {{- if ($global.Values.config.edge_video_analytics_microservice) }}
+        - name: SUBSCRIBER_default{{ $instance }}_ENDPOINT
+          value: "{{ $.Values.config.edge_video_analytics_microservice.name }}{{ $instance }}:{{ $subscriber_port }}"
+        {{- end }}
+        - name: SUBSCRIBER_default{{ $instance }}_TYPE
+          value: "zmq_tcp"
+        {{- else }}
+        - name: SUBSCRIBER_default{{ $instance }}_ENDPOINT
+          value: "{{ $.Values.env.SOCKET_DIR }}"
+        - name: SUBSCRIBER_default{{ $instance }}_TYPE
+          value: "zmq_ipc"
+        {{- end }}
+        {{- end }}
+        {{ if eq $.Values.env.DEV_MODE false}}
+        - name: CONFIGMGR_CACERT
+          value: "/run/secrets/etcd/cacert.pem"
+        - name: CONFIGMGR_CERT
+          value: "/run/secrets/etcd/MultiModalVisualizationStreaming_client_certificate.pem"
+        - name: CONFIGMGR_KEY
+          value: "/run/secrets/etcd/MultiModalVisualizationStreaming_client_key.pem"
+        {{ end }}
+      
+      
+      volumes:
+      - name: multimodal-data-visualization-streaming-tmpfs0
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs1
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs2
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs3
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs4
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs5
+        emptyDir: {}
+      - name: multimodal-data-visualization-streaming-tmpfs6
+        emptyDir: {}
+      {{- if eq $.Values.config.multimodal_data_visualization_streaming.IPC true}}
+      - name: {{ $.Values.volumes.eii_socket.name }}
+        persistentVolumeClaim:
+          claimName: {{ $.Values.volumes.eii_socket.name }}
+      {{- end }}
+      {{ if eq $.Values.env.DEV_MODE false}}
+      - name: etcd-certs
+        secret:
+          secretName: eii-certs
+          items:
+          - key: cacert.pem
+            path: cacert.pem
+          - key: MultiModalVisualizationStreaming_client_certificate.pem
+            path: MultiModalVisualizationStreaming_client_certificate.pem
+          - key: MultiModalVisualizationStreaming_client_key.pem
+            path: MultiModalVisualizationStreaming_client_key.pem
+      {{ end }}

@@ -1,0 +1,99 @@
+# Copyright Intel Corporation
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: configmgragent
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: configmgragent
+  type: NodePort
+  ports:
+    - name: tcp
+      port: {{ .Values.config.etcd.client_port }}
+      targetPort: {{ .Values.config.etcd.client_port }}
+      nodePort: {{ .Values.config.etcd.ext.client_port }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: configmgragent
+  name: ia-configmgr-agent
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configmgragent
+  template:
+    metadata:
+      labels:
+        app: configmgragent
+    spec:
+      {{- if eq .Values.env.DEV_MODE false}}
+      nodeSelector:
+              node-role.kubernetes.io/master: ""
+      {{- end }}
+      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      imagePullSecrets:
+      - name: registryauth
+      {{- end }}
+      containers:
+      - name: ia-configmgr-agent
+        image: {{ .Values.DOCKER_REGISTRY }}edgeinsights/ia_configmgr_agent:{{ .Values.EII_VERSION }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        volumeMounts:
+        {{ if eq .Values.env.DEV_MODE false}}
+        - name: certs
+          mountPath: /EII/Certificates/
+        {{ end }}
+        - name: eii-config
+          mountPath: /EII/etcd/config/eii_config.json
+          subPath: eii_config.json
+
+        env:
+        - name: SERVICES
+          value: "{{  .Values.env.config_agent_service }}"
+        - name: AppName
+          value: "ConfigMgrAgent"
+        - name: ETCD_HOST
+          value: "{{ .Values.env.etcd_host }}"
+        - name: DEV_MODE
+          value: "{{ .Values.env.DEV_MODE }}"
+        - name: EII_USER_NAME
+          value: "{{ .Values.env.EII_USER_NAME }}"
+        - name: ETCD_DATA_DIR
+          value: "{{ .Values.env.ETCD_DATA_DIR }}"
+        - name: ETCD_CLIENT_PORT
+          value: "{{ .Values.config.etcd.client_port }}"
+        - name: ETCD_PEER_PORT
+          value: "{{ .Values.config.etcd.peer_port }}"
+        - name: ETCD_NAME
+          value: "leader"
+        - name: HOST_IP
+          value: "{{  .Values.env.HOST_IP }}"
+        - name: ETCD_INITIAL_CLUSTER_STATE
+          value: "new"
+        - name: ETCDCTL_API
+          value: "3"
+        - name: no_proxy
+          value: localhost,127.0.0.1,0.0.0.0:{{ .Values.config.etcd.client_port }},0.0.0.0:{{ .Values.config.etcd.peer_port }}
+        - name: NO_PROXY
+          value: localhost,127.0.0.1,0.0.0.0:{{ .Values.config.etcd.client_port }},0.0.0.0:{{ .Values.config.etcd.peer_port }}
+        - name: ETCD_PREFIX
+          value: "{{ .Values.env.etcd_prefix }}"
+        - name: ETCDROOT_PASSWORD
+          value: "{{ .Values.env.ETCDROOT_PASSWORD }}"        
+        - name: PROVISION_MODE
+          value: "{{ .Values.env.PROVISION_MODE }}"
+      volumes:
+      - name: certs
+        hostPath:
+          path:  {{ .Values.env.EII_HOME_DIR }}build/helm-eii/eii-deploy/Certificates
+
+      - name: eii-config
+        configMap:
+          name: etcd-provision-input
+

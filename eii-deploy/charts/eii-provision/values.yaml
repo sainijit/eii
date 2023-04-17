@@ -1,0 +1,39 @@
+# Copyright Intel Corporation
+
+namespace: default
+EII_VERSION: 4.0.0
+DOCKER_REGISTRY: ''
+DOCKER_USERNAME: ''
+DOCKER_PASSWORD: ''
+imagePullPolicy: IfNotPresent
+env:
+  DEV_MODE: false
+  EII_USER_NAME: eiiuser
+  etcd_prefix:
+  etcd_host:
+  EII_INSTALL_PATH: /opt/intel/eii
+  HOST_IP: ''
+  config_agent_service: EtcdUI,VideoIngestion,VideoAnalytics,MultiModalVisualizationStreaming,MultiModalVisualization
+  EII_HOME_DIR: ''
+  ETCD_DATA_DIR: /EII/etcd/data/
+  ETCDROOT_PASSWORD: ''
+  PROVISION_MODE: ''
+network:
+  etcd:
+    client_port: 8379
+    peer_port: 8380
+    ext:
+      client_port: 32379
+config:
+  etcd:
+    name: configmgragent
+    client_port: 8379
+    peer_port: 8380
+    ext:
+      client_port: 32379
+volumes:
+  eii_socket:
+    name: vol-eii-socket
+    size: 10Mi
+    location: "/EII/sockets"
+    hostpath: "/opt/intel/eii/sockets"
