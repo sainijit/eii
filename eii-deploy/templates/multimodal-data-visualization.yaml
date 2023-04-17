@@ -6,7 +6,7 @@ metadata:
   name: {{ $.Values.config.multimodal_data_visualization.name }}
   namespace: {{ $.Values.namespace }}
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: MultiModalVisualization
   ports:
