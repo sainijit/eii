@@ -10,6 +10,6 @@ entries:
     name: eii-deploy
     type: application
     urls:
-    - https://raw.githubusercontent.com/sindujaks/eii-helm-deploy/main/eii-deploy.tar.gz
+    - https://raw.githubusercontent.com/sindujaks/eii-helm-deploy/abhishek/pv_changes/eii-deploy.tar.gz
     version: "1.0.0"
 generated: "2023-01-20T16:26:14,802529643+05:30"

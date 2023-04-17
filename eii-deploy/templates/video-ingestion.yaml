@@ -59,19 +59,19 @@ spec:
       nodeSelector:
         ncs2: "true"
       {{- end }}
-      {{- if and $global.Values.DOCKER_USERNAME $global.Values.DOCKER_PASSWORD }}
-      imagePullSecrets:
-      - name: registryauth
-      {{- end }}
+      # {{- if and $global.Values.DOCKER_USERNAME $global.Values.DOCKER_PASSWORD }}
+      # imagePullSecrets:
+      # - name: registryauth
+      # {{- end }}
       containers:
       - name: ia-video-ingestion{{ $instance }}
-        image: {{ $global.Values.DOCKER_REGISTRY }}edgeinsights/ia_video_ingestion:{{ $global.Values.EII_VERSION }}
+        image: {{ $global.Values.DOCKER_REGISTRY }}ia_video_ingestion:{{ $global.Values.EII_VERSION }}
         imagePullPolicy: {{ $global.Values.imagePullPolicy }}
         volumeMounts:
         - name: dev
-          mountPath: /dev
-        - name: dev-shm
           mountPath: /dev/shm
+        # - name: dev-shm
+        #   mountPath: /dev/shm
         - name: tmp
           mountPath: /tmp
         - name: var-tmp
@@ -132,21 +132,21 @@ spec:
         {{ end }}
 
       volumes:
-      - name: dev
-        hostPath:
-          path: /dev
-      - name: dev-shm
-        hostPath:
-          path: /dev/shm
       - name: tmp
-        hostPath:
-          path: /tmp
+        persistentVolumeClaim:
+          claimName: vol-tmp
+      - name: dev
+        persistentVolumeClaim:
+          claimName: vol-dev
+      # - name: dev-shm
+      #   persistentVolumeClaim:
+      #     claimName: vol-dev-shm
       - name: var-tmp
-        hostPath:
-          path: /var/tmp
+        persistentVolumeClaim:
+          claimName: vol-var-tmp
       - name: run-udev
-        hostPath:
-          path: /run/udev
+        persistentVolumeClaim:
+          claimName: vol-run-udev
 
       {{- if eq $global.Values.config.video_ingestion.IPC true}}
       - name: {{ $global.Values.volumes.eii_socket.name }}

@@ -6,16 +6,16 @@ metadata:
   name: {{ $.Values.config.multimodal_data_visualization_streaming.name }}
   namespace: {{ $.Values.namespace }}
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
   - name: https
     port: {{ $.Values.config.multimodal_data_visualization_streaming.int.https_port }}
     targetPort: {{ $.Values.config.multimodal_data_visualization_streaming.int.https_port }}
-    nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.https_port }}
+    # nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.https_port }}
   - name: http
     port: {{ $.Values.config.multimodal_data_visualization_streaming.int.http_port }}
     targetPort: {{ $.Values.config.multimodal_data_visualization_streaming.int.http_port }}
-    nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.http_port }}
+    # nodePort: {{ $.Values.config.multimodal_data_visualization_streaming.ext.http_port }}
   selector:
           app: MultiModalVisualizationStreaming
 ---
@@ -24,7 +24,7 @@ kind: Deployment
 metadata:
   labels:
     app: MultiModalVisualizationStreaming
-  name: deployment-multimodal-data-visualization-streaming
+  name: deployment-m-d-v-streaming
   namespace: {{ $.Values.namespace }}
 
 spec:
@@ -37,17 +37,17 @@ spec:
       labels:
         app: MultiModalVisualizationStreaming
     spec:
-      securityContext:
-        runAsUser: {{ $.Values.env.EII_UID }}
-        runAsGroup: {{ $.Values.env.EII_UID }}
-        fsGroup: {{ $.Values.env.EII_UID }}
-      {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
-      imagePullSecrets:
-      - name: registryauth
-      {{- end }}
+      # securityContext:
+      #   runAsUser: {{ $.Values.env.EII_UID }}
+      #   runAsGroup: {{ $.Values.env.EII_UID }}
+      #   fsGroup: {{ $.Values.env.EII_UID }}
+      # {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
+      # imagePullSecrets:
+      # - name: registryauth
+      # {{- end }}
       containers:
       - name: ia-multimodal-data-visualization-streaming
-        image: {{ $.Values.DOCKER_REGISTRY }}intel/multimodal-data-visualization-streaming:{{ $.Values.EII_VERSION }}
+        image: {{ $.Values.DOCKER_REGISTRY }}multimodal-data-visualization-streaming:{{ $.Values.EII_VERSION }}
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
         volumeMounts:
         - mountPath: /etc/nginx/sites-enabled
@@ -84,7 +84,7 @@ spec:
         - name:  ETCD_PREFIX
           value: ''
         - name: HOST_IP
-          value: '{{ $.Values.env.HOST_IP }}'
+          value: "multimodal-data-visualization-streaming"
         - name: MODE
           value: "EII"
         - name: PROVISION_MODE

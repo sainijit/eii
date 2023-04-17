@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: 
+  name: visualization
+  namespace: {{ .Values.namespace }}
+spec:
+  to:
+    kind: Service
+    name: multimodal-data-visualization
+  port:
+    targetPort: 443
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: None

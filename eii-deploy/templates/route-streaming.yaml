@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: 
+  name: visualization-streaming
+  namespace: {{ .Values.namespace }}
+spec:
+  to:
+    kind: Service
+    name: multimodal-data-visualization-streaming
+  port:
+    targetPort: 5004
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: None

@@ -8,12 +8,12 @@ metadata:
 spec:
   selector:
     app: configmgragent
-  type: NodePort
+  type: ClusterIP
   ports:
     - name: tcp
       port: {{ .Values.config.etcd.client_port }}
       targetPort: {{ .Values.config.etcd.client_port }}
-      nodePort: {{ .Values.config.etcd.ext.client_port }}
+      # nodePort: {{ .Values.config.etcd.ext.client_port }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -32,17 +32,22 @@ spec:
       labels:
         app: configmgragent
     spec:
-      {{- if eq .Values.env.DEV_MODE false}}
-      nodeSelector:
-              node-role.kubernetes.io/master: ""
-      {{- end }}
-      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
-      imagePullSecrets:
-      - name: registryauth
-      {{- end }}
+      # {{- if eq .Values.env.DEV_MODE false}}
+      # nodeSelector:
+      #         node-role.kubernetes.io/master: ""
+      # {{- end }}
+      securityContext:
+        # runAsUser: 1019870000
+        # runAsGroup: 1019870000
+        # fsGroup: 1019870000
+        runAsNonRoot: false
+      # {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      # imagePullSecrets:
+      # - name: registryauth
+      # {{- end }}
       containers:
       - name: ia-configmgr-agent
-        image: {{ .Values.DOCKER_REGISTRY }}edgeinsights/ia_configmgr_agent:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}ia_configmgr_agent:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         volumeMounts:
         {{ if eq .Values.env.DEV_MODE false}}
@@ -90,8 +95,8 @@ spec:
           value: "{{ .Values.env.PROVISION_MODE }}"
       volumes:
       - name: certs
-        hostPath:
-          path:  {{ .Values.env.EII_HOME_DIR }}build/helm-eii/eii-deploy/Certificates
+        persistentVolumeClaim:
+          claimName: eii-certs
 
       - name: eii-config
         configMap:

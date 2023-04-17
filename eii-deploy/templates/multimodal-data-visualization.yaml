@@ -13,7 +13,7 @@ spec:
   - name: multimodal-data-visualization-port
     port: {{ $.Values.config.multimodal_data_visualization.int.port }}
     targetPort: {{ $.Values.config.multimodal_data_visualization.int.port }}
-    nodePort: {{ $.Values.config.multimodal_data_visualization.ext.port }}
+    # nodePort: {{ $.Values.config.multimodal_data_visualization.ext.port }}
   
 ---
 apiVersion: apps/v1
@@ -34,13 +34,13 @@ spec:
       labels:
         app: MultiModalVisualization
     spec:
-      {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
-      imagePullSecrets:
-      - name: registryauth
-      {{- end }}
+      # {{- if and $.Values.DOCKER_USERNAME $.Values.DOCKER_PASSWORD }}
+      # imagePullSecrets:
+      # - name: registryauth
+      # {{- end }}
       containers:
       - name: ia-multimodal-data-visualization
-        image: {{ $.Values.DOCKER_REGISTRY }}intel/multimodal-data-visualization:{{ $.Values.EII_VERSION }}
+        image: {{ $.Values.DOCKER_REGISTRY }}multimodal-data-visualization:{{ $.Values.EII_VERSION }}
         imagePullPolicy: {{ $.Values.imagePullPolicy }}
         volumeMounts:
         - name: vol-temp-grafana
@@ -65,7 +65,7 @@ spec:
         - name:  ETCD_PREFIX
           value: ''
         - name: HOST_IP
-          value: '{{ $.Values.env.HOST_IP }}'
+          value: "multimodal-data-visualization-streaming"
         - name: INFLUXDB_USERNAME
           value: '{{ $.Values.env.INFLUXDB_USERNAME }}'
         - name: INFLUXDB_PASSWORD

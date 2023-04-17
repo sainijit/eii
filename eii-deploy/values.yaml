@@ -1,28 +1,28 @@
 # Copyright Intel Corporation
 
-namespace: default
+namespace: eii
 EII_VERSION: 4.0.0
-DOCKER_REGISTRY: ''
-DOCKER_USERNAME: ''
-DOCKER_PASSWORD: ''
-imagePullPolicy: IfNotPresent
-storageClassName: manual
+DOCKER_REGISTRY: 'default-route-openshift-image-registry.apps.sandbox.cfa.devcloud.intel.com/eii/'
+DOCKER_USERNAME: 'devcloud'
+DOCKER_PASSWORD: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IktMQV8yU2xqaTVrN0paRWRNMUdid0FFRENvZHdtanFnRkNfbjFGb0lCUFUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZXZjbG91ZC1kZXYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoiZGV2Y2xvdWQtdG9rZW4tazZ4NGciLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGV2Y2xvdWQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJlNDc3ZDdlYi0wNTkwLTQxYzUtYTZkZC0yM2NkYmUxOWE0MWEiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGV2Y2xvdWQtZGV2OmRldmNsb3VkIn0.Fkzog3BOzHSdVdCk10UnuRhF4L3fVa3Jhy_W6XRCZt0nleKHqoH2SrQ9ZwNuw__N37QOQcyfwVn0gREVL6fW746jYA2ooKJ8hK3Wk2aO_aU59ddsNz2FsHbWkMdBhojLtpe_F8nwfq-Mxxm607DPOMfSNPSxG-I3W9UTB7oBYxDRu8GRATvMDdZNT3Mm-q5PPxZXJP9B6DNKfcpdiv2prusdwQhFGuKlZqq5nM0m_GcFWcoT6wkZF9vM0iGfsmdBx6IsCWE2D9dgu3jbK8M3y22M0lSC6NG5OcNG-prBguiqeO2L0pTw7NjbM2GxHPbtv_52YjRfPRPHZ61X__b1hQ'
+imagePullPolicy: Always
+storageClassName: ocs-storagecluster-cephfs
 num_video_instances: 1
 env:
-  DEV_MODE: false
+  DEV_MODE: true
   PROFILING_MODE: false
   EII_INSTALL_PATH: /opt/intel/eii
   EII_USER_NAME: eiiuser
-  EII_HOME_DIR: ''
+  EII_HOME_DIR: '/home/eii-abhishek/EII/DevCloudHelm/eii-helm-deploy'
   EII_UID: '1999'
   SOCKET_DIR: /EII/sockets
   HOST_IP: ''
   config_agent_service: EtcdUI,VideoIngestion,VideoAnalytics,MultiModalVisualizationStreaming,MultiModalVisualization
-  INFLUXDB_USERNAME: ''
-  INFLUXDB_PASSWORD: ''
-  MINIO_ACCESS_KEY: ''
-  MINIO_SECRET_KEY: ''
-  ETCDROOT_PASSWORD: ''
+  INFLUXDB_USERNAME: 'admin'
+  INFLUXDB_PASSWORD: 'admin123'
+  MINIO_ACCESS_KEY: 'admin'
+  MINIO_SECRET_KEY: 'password'
+  ETCDROOT_PASSWORD: 'eii123'
   PIPELINE: ''
   HTTP_METHOD_FETCH_METADATA: GET
 config:
@@ -35,7 +35,7 @@ config:
   etcd_ui:
     name: etcd-ui
     int_port: 7071
-    ext_port: 30010
+    ext_port: 30011
   video_ingestion:
     name: videoingestion
     publish_port: 65012
@@ -70,4 +70,23 @@ volumes:
     name: vol-eii-socket
     size: 10Mi
     location: "/EII/sockets"
-    hostpath: "/opt/intel/eii/sockets"
+    #hostpath: "/opt/intel/eii/sockets"
+  dev:
+    name: vol-dev
+    size: 500Mi
+    location: "/EII"
+  tmp:
+    name: vol-tmp
+    size: 500Mi
+    location: "/EII"
+  var_tmp:
+    name: vol-var-tmp
+    size: 500Mi
+    location: "/EII"
+  run_udev:
+    name: vol-run-udev
+    size: 500Mi
+    location: "/EII"
+  certs:
+    name: eii-certs
+    size: 500Mi

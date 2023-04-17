@@ -6,13 +6,13 @@ metadata:
   name: {{ .Values.config.etcd_ui.name }}
   namespace: {{ .Values.namespace }}
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: etcd-ui
   ports:
   - port: {{ .Values.config.etcd_ui.int_port }}
     targetPort: {{ .Values.config.etcd_ui.int_port }}
-    nodePort: {{ .Values.config.etcd_ui.ext_port }}
+    # nodePort: {{ .Values.config.etcd_ui.ext_port }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -32,13 +32,13 @@ spec:
       labels:
         app: etcd-ui
     spec:
-      {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
-      imagePullSecrets:
-      - name: registryauth
-      {{- end }}
+      # {{- if and .Values.DOCKER_USERNAME .Values.DOCKER_PASSWORD }}
+      # imagePullSecrets:
+      # - name: registryauth
+      # {{- end }}
       containers:
       - name: ia-etcd-ui
-        image: {{ .Values.DOCKER_REGISTRY }}edgeinsights/ia_etcd_ui:{{ .Values.EII_VERSION }}
+        image: {{ .Values.DOCKER_REGISTRY }}ia_etcd_ui:{{ .Values.EII_VERSION }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         volumeMounts:
         - name: tmp-ssl

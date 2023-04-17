@@ -1,0 +1,14 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata: 
+  name: etcd
+  namespace: {{ .Values.namespace }}
+spec:
+  to:
+    kind: Service
+    name: etcd-ui
+  port:
+    targetPort: 7070
+  tls:
+    termination: passthrough
+    insecureEdgeTerminationPolicy: None

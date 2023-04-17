@@ -1,23 +1,24 @@
 # Copyright Intel Corporation
 
-namespace: default
+namespace: eii
 EII_VERSION: 4.0.0
-DOCKER_REGISTRY: ''
-DOCKER_USERNAME: ''
-DOCKER_PASSWORD: ''
-imagePullPolicy: IfNotPresent
+DOCKER_REGISTRY: 'default-route-openshift-image-registry.apps.sandbox.cfa.devcloud.intel.com/eii/'
+DOCKER_USERNAME: 'devcloud'
+DOCKER_PASSWORD: 'eyJhbGciOiJSUzI1NiIsImtpZCI6IktMQV8yU2xqaTVrN0paRWRNMUdid0FFRENvZHdtanFnRkNfbjFGb0lCUFUifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJkZXZjbG91ZC1kZXYiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoiZGV2Y2xvdWQtdG9rZW4tazZ4NGciLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZGV2Y2xvdWQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiJlNDc3ZDdlYi0wNTkwLTQxYzUtYTZkZC0yM2NkYmUxOWE0MWEiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6ZGV2Y2xvdWQtZGV2OmRldmNsb3VkIn0.Fkzog3BOzHSdVdCk10UnuRhF4L3fVa3Jhy_W6XRCZt0nleKHqoH2SrQ9ZwNuw__N37QOQcyfwVn0gREVL6fW746jYA2ooKJ8hK3Wk2aO_aU59ddsNz2FsHbWkMdBhojLtpe_F8nwfq-Mxxm607DPOMfSNPSxG-I3W9UTB7oBYxDRu8GRATvMDdZNT3Mm-q5PPxZXJP9B6DNKfcpdiv2prusdwQhFGuKlZqq5nM0m_GcFWcoT6wkZF9vM0iGfsmdBx6IsCWE2D9dgu3jbK8M3y22M0lSC6NG5OcNG-prBguiqeO2L0pTw7NjbM2GxHPbtv_52YjRfPRPHZ61X__b1hQ'
+imagePullPolicy: Always
 env:
-  DEV_MODE: false
+  DEV_MODE: true
   EII_USER_NAME: eiiuser
+  EII_UID: '1999'
   etcd_prefix:
   etcd_host:
   EII_INSTALL_PATH: /opt/intel/eii
   HOST_IP: ''
   config_agent_service: EtcdUI,VideoIngestion,VideoAnalytics,MultiModalVisualizationStreaming,MultiModalVisualization
-  EII_HOME_DIR: ''
+  EII_HOME_DIR: '/home/eii-abhishek/EII/DevCloudHelm/eii-helm-deploy'
   ETCD_DATA_DIR: /EII/etcd/data/
-  ETCDROOT_PASSWORD: ''
-  PROVISION_MODE: ''
+  ETCDROOT_PASSWORD: 'eii123'
+  PROVISION_MODE: 'k8s'
 network:
   etcd:
     client_port: 8379
@@ -30,10 +31,13 @@ config:
     client_port: 8379
     peer_port: 8380
     ext:
-      client_port: 32379
+      client_port: 32382
 volumes:
   eii_socket:
     name: vol-eii-socket
     size: 10Mi
     location: "/EII/sockets"
-    hostpath: "/opt/intel/eii/sockets"
+    #hostpath: "/opt/intel/eii/sockets"
+  certs:
+    name: eii-certs
+    size: 500Mi
